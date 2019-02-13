@@ -23,27 +23,27 @@ rm(uris)
 # Use principal component analysis to reduce the number of dimensions
 pca <- prcomp(vectors)
 
-# We are fine with using the principal components that explain 90% of the variance
+# We are fine with using the principal components that explain 85% of the variance
+min.var <- 0.85
 # Calculate variance
 pca.var <- pca$sdev^2
 # Take the cumulutive sum of proportional variance
 pca.cum.var <- cumsum(pca.var/sum(pca.var))
 
-# For fun, let's view a scree plot of this pca object
+# For fun, let's view a scree-like plot of this pca object
 plot(pca.var/sum(pca.var), 
      xlab = 'Principal Component',
      ylab = 'Proportion of Variance Explained',
-     type = 'b',
-     ylim = c(0,1))
+     type = 'b')
 
 # Find the first component that meets the 90% mark
-pca.min <- min(which(pca.cum.var >= 0.9))
+pca.min <- min(which(pca.cum.var >= min.var))
 
-# Transform our original vectors to pca space, taking only the components necessary to reach 90%
+# Transform our original vectors to pca space, taking only the components necessary to reach 85%
 vectors.pc <- predict(pca, vectors)[,1:pca.min]
 
 # Clean up some more
-rm(pca.cum.var, pca.var)
+rm(pca.cum.var, pca.var, min.var)
 
 # To visualize our data, perform tsne. 
 # We set pca to false because we already did that ourselves
