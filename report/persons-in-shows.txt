@@ -1,0 +1,14 @@
+Persons that appear in the shows cluster 1:
+
+ [1] "http://www.vondel.humanities.uva.nl/ecartico/persons/11911" "http://www.vondel.humanities.uva.nl/ecartico/persons/23828"
+ [3] "http://www.vondel.humanities.uva.nl/ecartico/persons/21846" "http://www.vondel.humanities.uva.nl/ecartico/persons/13176"
+ [5] "http://www.vondel.humanities.uva.nl/ecartico/persons/12150" "http://www.vondel.humanities.uva.nl/ecartico/persons/2807" 
+ [7] "http://www.vondel.humanities.uva.nl/ecartico/persons/11820" "http://www.vondel.humanities.uva.nl/ecartico/persons/12173"
+ [9] "http://www.vondel.humanities.uva.nl/ecartico/persons/11938" "http://www.vondel.humanities.uva.nl/ecartico/persons/12181"
+[11] "http://www.vondel.humanities.uva.nl/ecartico/persons/12237" "http://www.vondel.humanities.uva.nl/ecartico/persons/12183"
+[13] "http://www.vondel.humanities.uva.nl/ecartico/persons/9696"  "http://www.vondel.humanities.uva.nl/ecartico/persons/11642"
+[15] "http://www.vondel.humanities.uva.nl/ecartico/persons/11840" "http://www.vondel.humanities.uva.nl/ecartico/persons/12204"
+[17] "http://www.vondel.humanities.uva.nl/ecartico/persons/11841" "http://www.vondel.humanities.uva.nl/ecartico/persons/11826"
+[19] "http://www.vondel.humanities.uva.nl/ecartico/persons/12123" "http://www.vondel.humanities.uva.nl/ecartico/persons/12125"
+[21] "http://www.vondel.humanities.uva.nl/ecartico/persons/12210" "http://www.vondel.humanities.uva.nl/ecartico/persons/11830"
+[23] "http://www.vondel.humanities.uva.nl/ecartico/persons/12146"

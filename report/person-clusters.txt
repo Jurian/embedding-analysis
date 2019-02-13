@@ -1,0 +1,26 @@
+
+10 Random persons from person-cluster 1:
+
+ [1] "http://www.vondel.humanities.uva.nl/onstage/persons/2760" "http://www.vondel.humanities.uva.nl/onstage/persons/2787"
+ [3] "http://www.vondel.humanities.uva.nl/onstage/persons/3572" "http://www.vondel.humanities.uva.nl/onstage/persons/143" 
+ [5] "http://www.vondel.humanities.uva.nl/onstage/persons/3334" "http://www.vondel.humanities.uva.nl/onstage/persons/2891"
+ [7] "http://www.vondel.humanities.uva.nl/onstage/persons/2636" "http://www.vondel.humanities.uva.nl/onstage/persons/2871"
+ [9] "http://www.vondel.humanities.uva.nl/onstage/persons/2651" "http://www.vondel.humanities.uva.nl/onstage/persons/2550"
+ 
+ 
+10 Random persons from person-cluster 2:
+
+ [1] "http://www.vondel.humanities.uva.nl/onstage/persons/3388" "http://www.vondel.humanities.uva.nl/onstage/persons/3363"
+ [3] "http://www.vondel.humanities.uva.nl/onstage/persons/3360" "http://www.vondel.humanities.uva.nl/onstage/persons/3309"
+ [5] "http://www.vondel.humanities.uva.nl/onstage/persons/130"  "http://www.vondel.humanities.uva.nl/onstage/persons/3524"
+ [7] "http://www.vondel.humanities.uva.nl/onstage/persons/141"  "http://www.vondel.humanities.uva.nl/onstage/persons/3518"
+ [9] "http://www.vondel.humanities.uva.nl/onstage/persons/3499" "http://www.vondel.humanities.uva.nl/onstage/persons/3534"
+ 
+ 
+10 Random persons from person-cluster 3:
+
+ [1] "http://www.vondel.humanities.uva.nl/ecartico/persons/12168" "http://www.vondel.humanities.uva.nl/ecartico/persons/1034" 
+ [3] "http://www.vondel.humanities.uva.nl/ecartico/persons/21496" "http://www.vondel.humanities.uva.nl/ecartico/persons/12185"
+ [5] "http://www.vondel.humanities.uva.nl/ecartico/persons/11824" "http://www.vondel.humanities.uva.nl/ecartico/persons/11838"
+ [7] "http://www.vondel.humanities.uva.nl/ecartico/persons/12170" "http://www.vondel.humanities.uva.nl/ecartico/persons/16465"
+ [9] "http://www.vondel.humanities.uva.nl/ecartico/persons/9360"  "http://www.vondel.humanities.uva.nl/ecartico/persons/12111"
