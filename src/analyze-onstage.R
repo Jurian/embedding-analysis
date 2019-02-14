@@ -1,7 +1,6 @@
 library(data.table)
 library(ggplot2)
 library(Rtsne)
-library(mclust)
 
 # Load in the data
 vectors <- fread('data/onstage.AMSGrad.50.vectors.txt')
