@@ -3,8 +3,8 @@ library(ggplot2)
 library(Rtsne)
 
 # Load in the data
-vectors <- fread('data/onstage.nt.AMSGrad.50.vectors.txt')
-keys <- fread('data/onstage.nt.AMSGrad.50.dict.txt')
+vectors <- fread('data/ecartico.nt.AMSGrad.50.vectors.txt')
+keys <- fread('data/ecartico.nt.AMSGrad.50.dict.txt')
 
 # Only keep the records for URI's
 uris <- keys$V2 == 0
@@ -51,8 +51,8 @@ vis <- Rtsne(X = vectors.pc, dims = 2, pca = F, num_threads = 0)
 
 # Label the keys to make sure the clusters we find are meaningful
 labels <- data.table(
-  shows = grepl('/shows/', keys),
-  plays = grepl('/plays', keys),
+  shows = grepl('/places/', keys),
+  plays = grepl('/occupations', keys),
   persons = grepl('/persons/', keys)
 )
 # Mark all other keys as 'other'
