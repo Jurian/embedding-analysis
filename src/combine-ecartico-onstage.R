@@ -2,7 +2,6 @@ library(data.table)
 library(neuralnet)
 
 # Load in the data
-
 linkset <- fread('data/ecartico.onstage.linkset.csv', header = F)
 colnames(linkset) <- c('onstage', 'ecartico')
 
@@ -11,7 +10,6 @@ ecartico.keys <- fread('data/ecartico.nt.amsgrad.50.dict.txt')
 
 onstage.vectors <- fread('data/onstage.nt.amsgrad.50.vectors.txt')
 onstage.keys <- fread('data/onstage.nt.amsgrad.50.dict.txt')
-
 
 uris <- grepl('www.vondel.humanities.uva.nl/ecartico', ecartico.keys$V1)
 ecartico.vectors <- ecartico.vectors[uris]
@@ -34,3 +32,11 @@ n <- names(combined.data)
 f <- as.formula(paste(paste(n[1:50], collapse = " + ") , "~", paste(n[51:100], collapse = " + ")))
 nn <- neuralnet(f, data=combined.data, hidden=c(100,200,100), linear.output=T)
 pr.nn <- compute(nn,combined.data[,1:50])
+
+rm(f,n)
+
+combined.result <- data.frame(input = combined.data[,51:100], output = pr.nn$net.result)
+
+distances <- sapply(combined.result, function(x) {
+  dist(rbind(x[1:50], x[51:100]))
+})
