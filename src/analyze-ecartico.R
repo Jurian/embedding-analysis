@@ -3,8 +3,8 @@ library(ggplot2)
 library(Rtsne)
 
 # Load in the data
-vectors <- fread('data/ecartico.nt.AMSGrad.50.vectors.txt')
-keys <- fread('data/ecartico.nt.AMSGrad.50.dict.txt')
+vectors <- fread('data/ecartico.nt.amsgrad.50.vectors.txt')
+keys <- fread('data/ecartico.nt.amsgrad.50.dict.txt')
 
 # Only keep the records for URI's
 uris <- keys$V2 == 0
@@ -35,7 +35,7 @@ plot(pca.var/sum(pca.var),
      ylab = 'Proportion of Variance Explained',
      type = 'b')
 
-# Find the first component that meets the 90% mark
+# Find the first component that meets the 85% mark
 pca.min <- min(which(pca.cum.var >= min.var))
 
 # Transform our original vectors to pca space, taking only the components necessary to reach 85%
@@ -51,8 +51,8 @@ vis <- Rtsne(X = vectors.pc, dims = 2, pca = F, num_threads = 0)
 
 # Label the keys to make sure the clusters we find are meaningful
 labels <- data.table(
-  shows = grepl('/places/', keys),
-  plays = grepl('/occupations', keys),
+  places = grepl('/places/', keys),
+  occupations = grepl('/occupations', keys),
   persons = grepl('/persons/', keys)
 )
 # Mark all other keys as 'other'
