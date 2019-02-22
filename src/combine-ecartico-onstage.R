@@ -37,6 +37,10 @@ rm(f,n)
 
 combined.result <- data.frame(input = combined.data[,51:100], output = pr.nn$net.result)
 
-distances <- sapply(combined.result, function(x) {
-  dist(rbind(x[1:50], x[51:100]))
+distances.eucl <- apply(combined.result, 1, function(x) {
+  sqrt(sum((x[1:50] - x[51:100])^2))
+})
+
+distances.cos <- apply(combined.result, 1, function(x) {
+  sum(x[1:50] * x[51:100]) / (sqrt(sum(x[1:50]^2)) * sqrt(sum(x[51:100]^2)))
 })
