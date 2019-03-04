@@ -3,8 +3,8 @@ library(ggplot2)
 library(Rtsne)
 
 # Load in the data
-vectors <- fread('data/onstage.nt.AMSGrad.50.vectors.txt')
-keys <- fread('data/onstage.nt.AMSGrad.50.dict.txt')
+vectors <- fread('data/onstage.nt.amsgrad.50.vectors.txt')
+keys <- fread('data/onstage.nt.amsgrad.50.dict.txt')
 
 # Only keep the records for URI's
 uris <- keys$V2 == 0
@@ -69,15 +69,18 @@ ggplot(data.table(vis$Y)) +
   geom_point(aes(x = V1, y = V2, col = labels))
 
 # Find 10 example shows from each cluster, using the plot as a guide
-shows.1 <- keys[sample(which(vis$Y[,1] > -10 & vis$Y[,1] < 10  & vis$Y[,2] > 0   & vis$Y[,2] < 20 ), 10)]
-shows.2 <- keys[sample(which(vis$Y[,1] > 0   & vis$Y[,1] < 20  & vis$Y[,2] > -30 & vis$Y[,2] < -10), 10)]
-shows.3 <- keys[sample(which(vis$Y[,1] > -20 & vis$Y[,1] < -10 & vis$Y[,2] > -30 & vis$Y[,2] < -20), 10)]
+#shows.1 <- keys[sample(which(vis$Y[,1] > -10 & vis$Y[,1] < 10  & vis$Y[,2] > 0   & vis$Y[,2] < 20 ), 10)]
+#shows.2 <- keys[sample(which(vis$Y[,1] > 0   & vis$Y[,1] < 20  & vis$Y[,2] > -30 & vis$Y[,2] < -10), 10)]
+#shows.3 <- keys[sample(which(vis$Y[,1] > -20 & vis$Y[,1] < -10 & vis$Y[,2] > -30 & vis$Y[,2] < -20), 10)]
 
 # Find 10 example persons from each cluster, using the plot as a guide
-persons.1 <- keys[sample(which(vis$Y[,1] > -35 & vis$Y[,1] < -25 & vis$Y[,2] > -10 & vis$Y[,2] < 0 ), 10)]
-persons.2 <- keys[sample(which(vis$Y[,1] > -20 & vis$Y[,1] < -10 & vis$Y[,2] >  33 & vis$Y[,2] < 40), 10)]
-persons.3 <- keys[sample(which(vis$Y[,1] > -30 & vis$Y[,1] < -23 & vis$Y[,2] >  22 & vis$Y[,2] < 26), 10)]
+#persons.1 <- keys[sample(which(vis$Y[,1] > -35 & vis$Y[,1] < -25 & vis$Y[,2] > -10 & vis$Y[,2] < 0 ), 10)]
+#persons.2 <- keys[sample(which(vis$Y[,1] > -20 & vis$Y[,1] < -10 & vis$Y[,2] >  33 & vis$Y[,2] < 40), 10)]
+#persons.3 <- keys[sample(which(vis$Y[,1] > -30 & vis$Y[,1] < -23 & vis$Y[,2] >  22 & vis$Y[,2] < 26), 10)]
 
 # Which persons appear in the largest shows cluster?
-keys.persons <- keys[which(vis$Y[,1] > -10 & vis$Y[,1] < 10  & vis$Y[,2] > 0   & vis$Y[,2] < 20 )]
-keys.persons <- keys.persons[grepl('/persons/', keys.persons)]
+#keys.persons <- keys[which(vis$Y[,1] > -10 & vis$Y[,1] < 10  & vis$Y[,2] > 0   & vis$Y[,2] < 20 )]
+#keys.persons <- keys.persons[grepl('/persons/', keys.persons)]
+
+fwrite(vectors, file = "output/onstage.tsv", sep = "\t", col.names = F, row.names = F, quote = F)
+fwrite(data.table(keys, labels), file = 'output/onstage.labels.tsv', sep = "\t", row.names = F)

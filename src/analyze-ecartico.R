@@ -52,7 +52,7 @@ vis <- Rtsne(X = vectors.pc, dims = 2, pca = F, num_threads = 0)
 # Label the keys to make sure the clusters we find are meaningful
 labels <- data.table(
   places = grepl('/places/', keys),
-  occupations = grepl('/occupations', keys),
+  occupations = grepl('/occupations/', keys),
   persons = grepl('/persons/', keys)
 )
 # Mark all other keys as 'other'
@@ -68,4 +68,5 @@ labels <- as.factor(labels)
 ggplot(data.table(vis$Y)) +
   geom_point(aes(x = V1, y = V2, col = labels))
 
-
+fwrite(vectors, file = "output/ecartico.tsv", sep = "\t", col.names = F, row.names = F, quote = F)
+fwrite(data.table(keys, labels), file = 'output/ecartico.labels.tsv', sep = "\t", row.names = F)
