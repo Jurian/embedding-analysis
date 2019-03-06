@@ -19,6 +19,24 @@ keys <- keys[uris]
 # Clean up
 rm(uris)
 
+# Label the keys to make sure the clusters we find are meaningful
+labels <- data.table(
+  shows = grepl('/shows/', keys),
+  plays = grepl('/plays', keys),
+  persons = grepl('/persons/', keys)
+)
+# Mark all other keys as 'other'
+labels$other <- apply(labels, 1, function(x){!any(x)})
+# Create a vector with character labels
+labels <- apply(labels, 1, function(x){
+  colnames(labels)[which(x)]
+})
+# We only have a few labels, so turn into factor
+labels <- as.factor(labels)
+
+fwrite(vectors, file = "output/onstage.tsv", sep = "\t", col.names = F, row.names = F, quote = F)
+fwrite(data.table(keys, labels), file = 'output/onstage.labels.tsv', sep = "\t", row.names = F)
+
 # Use principal component analysis to reduce the number of dimensions
 pca <- prcomp(vectors)
 
@@ -49,21 +67,6 @@ rm(pca.cum.var, pca.var, min.var)
 # and num_threads to 0, which means use all available cores
 vis <- Rtsne(X = vectors.pc, dims = 2, pca = F, num_threads = 0)
 
-# Label the keys to make sure the clusters we find are meaningful
-labels <- data.table(
-  shows = grepl('/shows/', keys),
-  plays = grepl('/plays', keys),
-  persons = grepl('/persons/', keys)
-)
-# Mark all other keys as 'other'
-labels$other <- apply(labels, 1, function(x){!any(x)})
-# Create a vector with character labels
-labels <- apply(labels, 1, function(x){
-  colnames(labels)[which(x)]
-})
-# We only have a few labels, so turn into factor
-labels <- as.factor(labels)
-
 # Plot the result
 ggplot(data.table(vis$Y)) +
   geom_point(aes(x = V1, y = V2, col = labels))
@@ -81,6 +84,3 @@ ggplot(data.table(vis$Y)) +
 # Which persons appear in the largest shows cluster?
 #keys.persons <- keys[which(vis$Y[,1] > -10 & vis$Y[,1] < 10  & vis$Y[,2] > 0   & vis$Y[,2] < 20 )]
 #keys.persons <- keys.persons[grepl('/persons/', keys.persons)]
-
-fwrite(vectors, file = "output/onstage.tsv", sep = "\t", col.names = F, row.names = F, quote = F)
-fwrite(data.table(keys, labels), file = 'output/onstage.labels.tsv', sep = "\t", row.names = F)

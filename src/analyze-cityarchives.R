@@ -19,6 +19,32 @@ keys <- keys[uris]
 # Clean up
 rm(uris)
 
+# Label the keys to make sure the clusters we find are meaningful
+labels <- data.table(
+  ecartico_person = grepl('ecartico/persons', keys),
+  ecartico_marriage = grepl('ecartico/marriage', keys),
+  baptism_record = grepl('record/IndexOpDoopregister', keys),
+  baptism_person = grepl('person/IndexOpDoopregister', keys),
+  marriage_record =  grepl('record/IndexOpOndertrouwregister', keys),
+  marriage_person =  grepl('person/IndexOpOndertrouwregister', keys),
+  burial_record = grepl('record/IndexOpBegraafregistersVoor1811', keys),
+  burial_person = grepl('person/IndexOpBegraafregistersVoor1811', keys),
+  inventaris = grepl('inventaris', keys)
+)
+# Mark all other keys as 'other'
+labels$other <- apply(labels, 1, function(x){!any(x)})
+# Create a vector with character labels
+labels <- apply(labels, 1, function(x){
+  colnames(labels)[which(x)]
+})
+# We only have a few labels, so turn into factor
+labels <- as.factor(labels)
+
+fwrite(vectors, file = "output/cityarchives.tsv", sep = "\t", col.names = F, row.names = F, quote = F)
+fwrite(data.table(keys, labels), file = 'output/cityarchives.labels.tsv', sep = "\t", row.names = F)
+
+
+
 # Use principal component analysis to reduce the number of dimensions
 pca <- prcomp(vectors)
 
@@ -49,32 +75,7 @@ rm(pca.cum.var, pca.var, min.var)
 # and num_threads to 0, which means use all available cores
 vis <- Rtsne(X = vectors.pc, dims = 2, pca = F, num_threads = 0)
 
-# Label the keys to make sure the clusters we find are meaningful
-labels <- data.table(
-  ecartico_person = grepl('ecartico/persons', keys),
-  ecartico_marriage = grepl('ecartico/marriage', keys),
-  baptism_record = grepl('record/IndexOpDoopregister', keys),
-  baptism_person = grepl('person/IndexOpDoopregister', keys),
-  marriage_record =  grepl('record/IndexOpOndertrouwregister', keys),
-  marriage_person =  grepl('person/IndexOpOndertrouwregister', keys),
-  burial_record = grepl('record/IndexOpBegraafregistersVoor1811', keys),
-  burial_person = grepl('person/IndexOpBegraafregistersVoor1811', keys),
-  inventaris = grepl('inventaris', keys)
-)
-# Mark all other keys as 'other'
-labels$other <- apply(labels, 1, function(x){!any(x)})
-# Create a vector with character labels
-labels <- apply(labels, 1, function(x){
-  colnames(labels)[which(x)]
-})
-# We only have a few labels, so turn into factor
-labels <- as.factor(labels)
-
 # Plot the result
 ggplot(data.table(vis$Y)) +
   geom_point(aes(x = V1, y = V2, col = labels))
 
-test <- data.table(keys, labels)
-
-fwrite(vectors, file = "output/cityarchives.tsv", sep = "\t", col.names = F, row.names = F, quote = F)
-fwrite(data.table(keys, labels), file = 'output/cityarchives.labels.tsv', sep = "\t", row.names = F)
