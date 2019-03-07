@@ -41,7 +41,7 @@ fwrite(data.table(keys, labels), file = 'output/onstage.labels.tsv', sep = "\t",
 pca <- prcomp(vectors)
 
 # We are fine with using the principal components that explain min.var of the variance
-min.var <- 0.85
+min.var <- 0.9
 # Calculate variance
 pca.var <- pca$sdev^2
 # Take the cumulutive sum of proportional variance
