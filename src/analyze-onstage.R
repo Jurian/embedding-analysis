@@ -2,9 +2,11 @@ library(data.table)
 library(ggplot2)
 library(Rtsne)
 
+bca.type <- 'semantic'
+
 # Load in the data
-vectors <- fread('data/onstage.nt.amsgrad.50.vectors.txt')
-keys <- fread('data/onstage.nt.amsgrad.50.dict.txt')
+vectors <- fread(paste0('data/onstage.',bca.type,'.amsgrad.50.vectors.txt'))
+keys <- fread(paste0('data/onstage.',bca.type,'.amsgrad.50.dict.txt'))
 
 # Only keep the records for URI's
 uris <- keys$V2 == 0
@@ -34,8 +36,8 @@ labels <- apply(labels, 1, function(x){
 # We only have a few labels, so turn into factor
 labels <- as.factor(labels)
 
-fwrite(vectors, file = "output/onstage.tsv", sep = "\t", col.names = F, row.names = F, quote = F)
-fwrite(data.table(keys, labels), file = 'output/onstage.labels.tsv', sep = "\t", row.names = F)
+fwrite(vectors, file = paste0('output/onstage.',bca.type,'.tsv'), sep = "\t", col.names = F, row.names = F, quote = F)
+fwrite(data.table(keys, labels), file = paste0('output/onstage.',bca.type,'.labels.tsv'), sep = "\t", row.names = F)
 
 # Use principal component analysis to reduce the number of dimensions
 pca <- prcomp(vectors)

@@ -3,9 +3,11 @@ library(ggplot2)
 library(fpc)
 library(pvclust)
 
+bca.type <- 'vanilla'
+
 # Load in the data
-vectors <- fread('data/onstage.nt.amsgrad.50.vectors.txt')
-keys <- fread('data/onstage.nt.amsgrad.50.dict.txt')
+vectors <- fread(paste0('data/onstage.nt.',bca.type,'.amsgrad.50.vectors.txt'))
+keys <- fread(paste0('data/onstage.nt.',bca.type,'.amsgrad.50.dict.txt'))
 
 # Only keep the records for URI's
 uris <- keys$V2 == 0
