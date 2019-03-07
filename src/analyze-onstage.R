@@ -40,7 +40,7 @@ fwrite(data.table(keys, labels), file = 'output/onstage.labels.tsv', sep = "\t",
 # Use principal component analysis to reduce the number of dimensions
 pca <- prcomp(vectors)
 
-# We are fine with using the principal components that explain 85% of the variance
+# We are fine with using the principal components that explain min.var of the variance
 min.var <- 0.85
 # Calculate variance
 pca.var <- pca$sdev^2
@@ -53,10 +53,10 @@ plot(pca.var/sum(pca.var),
      ylab = 'Proportion of Variance Explained',
      type = 'b')
 
-# Find the first component that meets the 90% mark
+# Find the first component that meets the min.var mark
 pca.min <- min(which(pca.cum.var >= min.var))
 
-# Transform our original vectors to pca space, taking only the components necessary to reach 85%
+# Transform our original vectors to pca space, taking only the components necessary to reach min.var
 vectors.pc <- predict(pca, vectors)[,1:pca.min]
 
 # Clean up some more

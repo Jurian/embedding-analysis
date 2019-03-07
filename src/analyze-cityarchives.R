@@ -11,11 +11,6 @@ uris <- keys$V2 == 0
 vectors <- vectors[uris]
 keys <- keys[uris]$V1
 
-# Many URI's are pointing to outside sources, remove them
-uris <- grepl('www.vondel.humanities.uva.nl', keys)
-vectors <- vectors[uris]
-keys <- keys[uris]
-
 # Clean up
 rm(uris)
 
@@ -44,11 +39,10 @@ fwrite(vectors, file = "output/cityarchives.tsv", sep = "\t", col.names = F, row
 fwrite(data.table(keys, labels), file = 'output/cityarchives.labels.tsv', sep = "\t", row.names = F)
 
 
-
 # Use principal component analysis to reduce the number of dimensions
 pca <- prcomp(vectors)
 
-# We are fine with using the principal components that explain 85% of the variance
+# We are fine with using the principal components that explain min.var of the variance
 min.var <- 0.9
 # Calculate variance
 pca.var <- pca$sdev^2
@@ -61,10 +55,10 @@ plot(pca.var/sum(pca.var),
      ylab = 'Proportion of Variance Explained',
      type = 'b')
 
-# Find the first component that meets the 85% mark
+# Find the first component that meets the min.var mark
 pca.min <- min(which(pca.cum.var >= min.var))
 
-# Transform our original vectors to pca space, taking only the components necessary to reach 85%
+# Transform our original vectors to pca space, taking only the components necessary to reach min.var
 vectors.pc <- predict(pca, vectors)[,1:pca.min]
 
 # Clean up some more
