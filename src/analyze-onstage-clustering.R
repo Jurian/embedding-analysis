@@ -2,6 +2,7 @@ library(data.table)
 library(ggplot2)
 library(fpc)
 library(pvclust)
+library(meanShiftR)
 
 bca.type <- 'vanilla'
 
@@ -42,6 +43,8 @@ vectors.pc <- predict(pca, vectors)[,1:pca.min]
 # Clean up some more
 rm(pca.cum.var, pca.var, min.var)
 
+
+meanShiftR::meanShift(vectors.pc)
 
 k <- 8
 
