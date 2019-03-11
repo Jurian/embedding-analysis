@@ -2,11 +2,12 @@ library(data.table)
 library(ggplot2)
 library(Rtsne)
 
-bca.type <- 'semantic'
+bca.type <- 'vanilla'
 
 # Load in the data
 vectors <- fread(paste0('data/onstage.',bca.type,'.amsgrad.50.vectors.txt'))
 keys <- fread(paste0('data/onstage.',bca.type,'.amsgrad.50.dict.txt'))
+metadata <- fread('data/onstage_labels.csv', header = T, sep = "\t")
 
 # Only keep the records for URI's
 uris <- keys$V2 == 0
@@ -36,8 +37,20 @@ labels <- apply(labels, 1, function(x){
 # We only have a few labels, so turn into factor
 labels <- as.factor(labels)
 
+labels <- data.table(keys, labels)
+colnames(labels) <- c("key","type")
+labels$label <- sapply(keys, function(key){
+  idx <- which(key == metadata$URI)[1]
+  if(length(idx) == 0) {
+    return('Unknown')
+  } else {
+    return(metadata[idx]$label)
+  }
+})
+fwrite(labels, file = 'output/onstage.metadata.tsv', sep = "\t", row.names = F)
+
 fwrite(vectors, file = paste0('output/onstage.',bca.type,'.tsv'), sep = "\t", col.names = F, row.names = F, quote = F)
-fwrite(data.table(keys, labels), file = paste0('output/onstage.',bca.type,'.labels.tsv'), sep = "\t", row.names = F)
+#fwrite(data.table(keys, labels), file = paste0('output/onstage.',bca.type,'.labels.tsv'), sep = "\t", row.names = F)
 
 # Use principal component analysis to reduce the number of dimensions
 pca <- prcomp(vectors)
