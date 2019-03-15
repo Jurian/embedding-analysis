@@ -5,9 +5,9 @@ library(Rtsne)
 bca.type <- 'vanilla'
 
 # Load in the data
-vectors <- fread(paste0('data/onstage.',bca.type,'.amsgrad.50.vectors.txt'))
-keys <- fread(paste0('data/onstage.',bca.type,'.amsgrad.50.dict.txt'))
-metadata <- fread('data/onstage_labels.csv', header = T, sep = "\t")
+vectors <- fread(paste0('data/onstage.new.reverse.',bca.type,'.amsgrad.50.vectors.tsv'), sep = "\t")
+keys <- fread(paste0('data/onstage.new.reverse.',bca.type,'.amsgrad.50.dict.tsv'), sep = "\t", quote = "")
+metadata <- fread('data/onstage_labels.tsv', header = T, sep = "\t")
 
 # Only keep the records for URI's
 uris <- keys$V2 == 0
@@ -47,9 +47,9 @@ labels$label <- sapply(keys, function(key){
     return(metadata[idx]$label)
   }
 })
-fwrite(labels, file = 'output/onstage.metadata.tsv', sep = "\t", row.names = F)
+fwrite(labels, file = 'output/onstage.new.metadata.tsv', sep = "\t", row.names = F)
 
-fwrite(vectors, file = paste0('output/onstage.',bca.type,'.tsv'), sep = "\t", col.names = F, row.names = F, quote = F)
+#fwrite(vectors, file = paste0('output/onstage.new.',bca.type,'.tsv'), sep = "\t", col.names = F, row.names = F, quote = F)
 #fwrite(data.table(keys, labels), file = paste0('output/onstage.',bca.type,'.labels.tsv'), sep = "\t", row.names = F)
 
 # Use principal component analysis to reduce the number of dimensions

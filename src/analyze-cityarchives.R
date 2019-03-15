@@ -2,11 +2,11 @@ library(data.table)
 library(ggplot2)
 library(Rtsne)
 
-bca.type <- 'semantic'
+bca.type <- 'vanilla'
 
 # Load in the data
-vectors <- fread(paste0('data/cityarchives.',bca.type,'.amsgrad.50.vectors.txt'))
-keys <- fread(paste0('data/cityarchives.',bca.type,'.amsgrad.50.dict.txt'))
+vectors <- fread(paste0('data/cityarchives.',bca.type,'.amsgrad.50.vectors.tsv'), sep = "\t")
+keys <- fread(paste0('data/cityarchives.',bca.type,'.amsgrad.50.dict.tsv'), sep = "\t", quote = "")
 
 # Only keep the records for URI's
 uris <- keys$V2 == 0
@@ -30,7 +30,7 @@ labels <- data.table(
 )
 # Mark all other keys as 'other'
 labels$other <- apply(labels, 1, function(x){!any(x)})
-# Create a vector with character labels
+# Create a vector with character labels?
 labels <- apply(labels, 1, function(x){
   colnames(labels)[which(x)]
 })
