@@ -48,9 +48,7 @@ labels$label <- sapply(keys, function(key){
   }
 })
 fwrite(labels, file = 'output/onstage.new.metadata.tsv', sep = "\t", row.names = F)
-
-#fwrite(vectors, file = paste0('output/onstage.new.',bca.type,'.tsv'), sep = "\t", col.names = F, row.names = F, quote = F)
-#fwrite(data.table(keys, labels), file = paste0('output/onstage.',bca.type,'.labels.tsv'), sep = "\t", row.names = F)
+fwrite(vectors, file = paste0('output/onstage.new.',bca.type,'.tsv'), sep = "\t", col.names = F, row.names = F, quote = F)
 
 # Use principal component analysis to reduce the number of dimensions
 pca <- prcomp(vectors)
