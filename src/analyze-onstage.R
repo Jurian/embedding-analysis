@@ -5,8 +5,8 @@ library(Rtsne)
 bca.type <- 'vanilla'
 
 # Load in the data
-vectors <- fread(paste0('data/onstage.new.reverse.',bca.type,'.amsgrad.50.vectors.tsv'), sep = "\t")
-keys <- fread(paste0('data/onstage.new.reverse.',bca.type,'.amsgrad.50.dict.tsv'), sep = "\t", quote = "")
+vectors <- fread(paste0('data/onstage.new.reverse.',bca.type,'.amsgrad.200.vectors.tsv'), sep = "\t")
+keys <- fread(paste0('data/onstage.new.reverse.',bca.type,'.amsgrad.200.dict.tsv'), sep = "\t", quote = "")
 metadata <- fread('data/onstage_labels.tsv', header = T, sep = "\t")
 
 # Only keep the records for URI's
@@ -39,13 +39,11 @@ labels <- as.factor(labels)
 
 labels <- data.table(keys, labels)
 colnames(labels) <- c("key","type")
-labels$label <- sapply(keys, function(key){
+labels$label <- sapply(keys, function(key) {
   idx <- which(key == metadata$URI)[1]
-  if(length(idx) == 0) {
-    return('Unknown')
-  } else {
-    return(metadata[idx]$label)
-  }
+  if(is.na(idx))
+    return('unknown')
+  return(metadata[idx]$label)
 })
 fwrite(labels, file = 'output/onstage.new.metadata.tsv', sep = "\t", row.names = F)
 fwrite(vectors, file = paste0('output/onstage.new.',bca.type,'.tsv'), sep = "\t", col.names = F, row.names = F, quote = F)
