@@ -5,9 +5,9 @@ library(mclust)
 bca.type <- 'vanilla'
 
 # Load in the data
-vectors <- fread(paste0('data/onstage.new.reverse.',bca.type,'.amsgrad.200.vectors.tsv'), sep = "\t")
-keys <- fread(paste0('data/onstage.new.reverse.',bca.type,'.amsgrad.200.dict.tsv'), sep = "\t", quote = "")
-metadata <- fread('data/onstage_labels.tsv', header = T, sep = "\t")
+vectors <- fread(paste0('data/onstage.new.reverse.',bca.type,'.amsgrad.200.vectors.tsv'), sep = '\t')
+keys <- fread(paste0('data/onstage.new.reverse.',bca.type,'.amsgrad.200.dict.tsv'), sep = '\t', quote = "")
+metadata <- fread('data/onstage_labels.tsv', header = T, sep = '\t')
 
 # Only keep the records for URI's
 uris <- keys$V2 == 0
