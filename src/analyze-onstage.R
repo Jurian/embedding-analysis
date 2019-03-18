@@ -1,13 +1,14 @@
 library(data.table)
 library(ggplot2)
 library(Rtsne)
+library(pbapply)
 
 bca.type <- 'vanilla'
 
 # Load in the data
 vectors <- fread(paste0('data/onstage.new.reverse.',bca.type,'.amsgrad.200.vectors.tsv'), sep = "\t")
-keys <- fread(paste0('data/onstage.new.reverse.',bca.type,'.amsgrad.200.dict.tsv'), sep = "\t", quote = "")
-metadata <- fread('data/onstage_labels.tsv', header = T, sep = "\t")
+keys <- fread(paste0('data/onstage.new.reverse.',bca.type,'.amsgrad.200.dict.tsv'), sep = '\t', quote = "")
+metadata <- fread('data/onstage_labels.tsv', header = T, sep = '\t')
 
 # Only keep the records for URI's
 uris <- keys$V2 == 0
@@ -39,7 +40,7 @@ labels <- as.factor(labels)
 
 labels <- data.table(keys, labels)
 colnames(labels) <- c("key","type")
-labels$label <- sapply(keys, function(key) {
+labels$label <- pbapply::pbsapply(keys, function(key) {
   idx <- which(key == metadata$URI)[1]
   if(is.na(idx))
     return('unknown')
@@ -72,26 +73,3 @@ vectors.pc <- predict(pca, vectors)[,1:pca.min]
 
 # Clean up some more
 rm(pca.cum.var, pca.var, min.var)
-
-# To visualize our data, perform tsne. 
-# We set pca to false because we already did that ourselves
-# and num_threads to 0, which means use all available cores
-vis <- Rtsne(X = vectors.pc, dims = 2, pca = F, num_threads = 0)
-
-# Plot the result
-ggplot(data.table(vis$Y)) +
-  geom_point(aes(x = V1, y = V2, col = labels))
-
-# Find 10 example shows from each cluster, using the plot as a guide
-#shows.1 <- keys[sample(which(vis$Y[,1] > -10 & vis$Y[,1] < 10  & vis$Y[,2] > 0   & vis$Y[,2] < 20 ), 10)]
-#shows.2 <- keys[sample(which(vis$Y[,1] > 0   & vis$Y[,1] < 20  & vis$Y[,2] > -30 & vis$Y[,2] < -10), 10)]
-#shows.3 <- keys[sample(which(vis$Y[,1] > -20 & vis$Y[,1] < -10 & vis$Y[,2] > -30 & vis$Y[,2] < -20), 10)]
-
-# Find 10 example persons from each cluster, using the plot as a guide
-#persons.1 <- keys[sample(which(vis$Y[,1] > -35 & vis$Y[,1] < -25 & vis$Y[,2] > -10 & vis$Y[,2] < 0 ), 10)]
-#persons.2 <- keys[sample(which(vis$Y[,1] > -20 & vis$Y[,1] < -10 & vis$Y[,2] >  33 & vis$Y[,2] < 40), 10)]
-#persons.3 <- keys[sample(which(vis$Y[,1] > -30 & vis$Y[,1] < -23 & vis$Y[,2] >  22 & vis$Y[,2] < 26), 10)]
-
-# Which persons appear in the largest shows cluster?
-#keys.persons <- keys[which(vis$Y[,1] > -10 & vis$Y[,1] < 10  & vis$Y[,2] > 0   & vis$Y[,2] < 20 )]
-#keys.persons <- keys.persons[grepl('/persons/', keys.persons)]
