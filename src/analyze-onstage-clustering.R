@@ -1,13 +1,20 @@
 library(data.table)
 library(ggplot2)
 library(mclust)
+library(pbapply)
 
-bca.type <- 'vanilla'
+createFileName <- function(file, reverse, bca.type, glove.type, dimensions) {
+  reverse <- if(reverse) 'reverse' else ''
+  paste(file,reverse,bca.type,glove.type,dimensions, sep = '.')
+}
+
+filename <- createFileName('onstage.fixed', T, 'vanilla', 'amsgrad', 200)
 
 # Load in the data
-vectors <- fread(paste0('data/onstage.new.reverse.',bca.type,'.amsgrad.200.vectors.tsv'), sep = '\t')
-keys <- fread(paste0('data/onstage.new.reverse.',bca.type,'.amsgrad.200.dict.tsv'), sep = '\t', quote = "")
+vectors <- fread(paste0('data/', filename, '.vectors.tsv'), sep = "\t")
+keys <- fread(paste0('data/',filename,'.dict.tsv'), sep = '\t', quote = "")
 metadata <- fread('data/onstage_labels.tsv', header = T, sep = '\t')
+
 
 # Only keep the records for URI's
 uris <- keys$V2 == 0
@@ -39,7 +46,7 @@ labels <- as.factor(labels)
 
 labels <- data.table(keys, labels)
 colnames(labels) <- c("key","type")
-labels$label <- sapply(keys, function(key) {
+labels$label <- pbapply::pbsapply(keys, function(key) {
   idx <- which(key == metadata$URI)[1]
   if(is.na(idx))
     return('unknown')
@@ -65,7 +72,7 @@ pca.min <- min(which(pca.cum.var >= min.var))
 vectors.pc <- predict(pca, vectors)[,1:pca.min]
 
 # Clean up some more
-rm(pca, pca.cum.var, pca.var, min.var, vectors, pca.min, bca.type)
+rm(pca, pca.cum.var, pca.var, min.var, vectors, pca.min)
 
 shows.idx <- grepl('/shows/', keys)
 plays.idx <- grepl('/plays', keys)
@@ -81,19 +88,13 @@ labels$cluster[plays.idx] <- paste0('plays-cluster-', clst.plays$classification)
 labels$cluster[persons.idx] <- paste0('persons-cluster-', clst.persons$classification)
 rm(shows.idx, plays.idx, persons.idx)
 
-clst.combined <- mclust::Mclust(vectors.pc, G = 1:24)
+clst.combined <- mclust::Mclust(vectors.pc, G = 24:32)
 labels$cluster2 <- clst.combined$classification
 
 fwrite(data.table(vectors.pc), file = "output/onstage.pca.tsv", sep = "\t", col.names = F, row.names = F, quote = F)
 fwrite(labels, file = 'output/onstage.pca.labels.tsv', sep = "\t", row.names = F)
 
 
-shows <- labels[shows.idx]
-shows$date <- as.Date(shows$label)
-shows$date.numeric <- as.numeric(shows$label)
-
-p <- ggplot(shows, aes(date, ..count..))
-p <- p + geom_histogram(binwidth = 250, aes(color = cluster))
 
 
 
