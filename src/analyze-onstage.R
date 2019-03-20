@@ -3,11 +3,17 @@ library(ggplot2)
 library(Rtsne)
 library(pbapply)
 
-bca.type <- 'vanilla'
+
+createFileName <- function(file, reverse, bca.type, glove.type, dimensions) {
+  reverse <- if(reverse) 'reverse' else ''
+  paste(file,reverse,bca.type,glove.type,dimensions, sep = '.')
+}
+
+filename <- createFileName('onstage.fixed', T, 'vanilla', 'amsgrad', 200)
 
 # Load in the data
-vectors <- fread(paste0('data/onstage.new.reverse.',bca.type,'.amsgrad.200.vectors.tsv'), sep = "\t")
-keys <- fread(paste0('data/onstage.new.reverse.',bca.type,'.amsgrad.200.dict.tsv'), sep = '\t', quote = "")
+vectors <- fread(paste0('data/', filename, '.vectors.tsv'), sep = "\t")
+keys <- fread(paste0('data/',filename,'.dict.tsv'), sep = '\t', quote = "")
 metadata <- fread('data/onstage_labels.tsv', header = T, sep = '\t')
 
 # Only keep the records for URI's
@@ -46,8 +52,6 @@ labels$label <- pbapply::pbsapply(keys, function(key) {
     return('unknown')
   return(metadata[idx]$label)
 })
-fwrite(labels, file = 'output/onstage.new.metadata.tsv', sep = "\t", row.names = F)
-fwrite(vectors, file = paste0('output/onstage.new.',bca.type,'.tsv'), sep = "\t", col.names = F, row.names = F, quote = F)
 
 # Use principal component analysis to reduce the number of dimensions
 pca <- prcomp(vectors)
@@ -73,3 +77,6 @@ vectors.pc <- predict(pca, vectors)[,1:pca.min]
 
 # Clean up some more
 rm(pca.cum.var, pca.var, min.var)
+
+fwrite(labels, file = paste('output/', filename,'.metadata.tsv'), sep = "\t", row.names = F)
+fwrite(data.table(vectors.pc), file = paste0('output/',filename,'.pca.tsv'), sep = "\t", col.names = F, row.names = F, quote = F)
