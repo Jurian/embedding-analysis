@@ -9,11 +9,18 @@ createFileName <- function(file, reverse, bca.type, glove.type, dimensions) {
   paste(file,reverse,bca.type,glove.type,dimensions, sep = '.')
 }
 
-filename <- createFileName('onstage.fixed', T, 'vanilla', 'amsgrad', 200)
+createFileDir <- function(dir, filename) {
+  paste0(dir, filename)
+}
+
+
+filename <- createFileName('onstage', T, 'semantic', 'amsgrad', 200)
+inputFile <- createFileDir('../graph-embeddings/out/', filename)
+outputFile <- createFileDir('output/', filename)
 
 # Load in the data
-vectors <- fread(paste0('data/', filename, '.vectors.tsv'), sep = "\t")
-keys <- fread(paste0('data/',filename,'.dict.tsv'), sep = '\t', quote = "")
+vectors <- fread(paste0(inputFile, '.vectors.tsv'), sep = "\t")
+keys <- fread(paste0(inputFile,'.dict.tsv'), sep = '\t', quote = "", header = T)
 metadata <- fread('data/onstage_labels.tsv', header = T, sep = '\t')
 
 # Only keep the records for URI's
@@ -22,12 +29,14 @@ vectors <- vectors[uris]
 keys <- keys[uris]$V1
 
 # Many URI's are pointing to outside sources, remove them
-uris <- grepl('www.vondel.humanities.uva.nl', keys)
+uris <- grepl('www.vondel.humanities.uva.nl/onstage/', keys)
 vectors <- vectors[uris]
 keys <- keys[uris]
 
 # Clean up
 rm(uris)
+
+#vectors <- scale(vectors)
 
 # Label the keys to make sure the clusters we find are meaningful
 labels <- data.table(
@@ -57,7 +66,7 @@ labels$label <- pbapply::pbsapply(keys, function(key) {
 pca <- prcomp(vectors)
 
 # We are fine with using the principal components that explain min.var of the variance
-min.var <- 0.9
+min.var <- 0.95
 # Calculate variance
 pca.var <- pca$sdev^2
 # Take the cumulutive sum of proportional variance
@@ -78,5 +87,5 @@ vectors.pc <- predict(pca, vectors)[,1:pca.min]
 # Clean up some more
 rm(pca.cum.var, pca.var, min.var)
 
-fwrite(labels, file = paste('output/', filename,'.metadata.tsv'), sep = "\t", row.names = F)
-fwrite(data.table(vectors.pc), file = paste0('output/',filename,'.pca.tsv'), sep = "\t", col.names = F, row.names = F, quote = F)
+fwrite(labels, file = paste0(outputFile,'.metadata.tsv'), sep = "\t", row.names = F)
+fwrite(data.table(vectors.pc), file = paste0(outputFile,'.pca.tsv'), sep = "\t", col.names = F, row.names = F, quote = F)

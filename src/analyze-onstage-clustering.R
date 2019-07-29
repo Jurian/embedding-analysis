@@ -2,19 +2,26 @@ library(data.table)
 library(ggplot2)
 library(mclust)
 library(pbapply)
+library(scales)
 
 createFileName <- function(file, reverse, bca.type, glove.type, dimensions) {
   reverse <- if(reverse) 'reverse' else ''
   paste(file,reverse,bca.type,glove.type,dimensions, sep = '.')
 }
 
-filename <- createFileName('onstage.fixed', T, 'vanilla', 'amsgrad', 200)
+createFileDir <- function(dir, filename) {
+  paste0(dir, filename)
+}
+
+
+filename <- createFileName('onstage', T, 'vanilla', 'amsgrad', 200)
+inputFile <- createFileDir('../graph-embeddings/out/', filename)
+outputFile <- createFileDir('output/', filename)
 
 # Load in the data
-vectors <- fread(paste0('data/', filename, '.vectors.tsv'), sep = "\t")
-keys <- fread(paste0('data/',filename,'.dict.tsv'), sep = '\t', quote = "")
+vectors <- fread(paste0(inputFile, '.vectors.tsv'), sep = "\t")
+keys <- fread(paste0(inputFile,'.dict.tsv'), sep = '\t', quote = "", header = F)
 metadata <- fread('data/onstage_labels.tsv', header = T, sep = '\t')
-
 
 # Only keep the records for URI's
 uris <- keys$V2 == 0
@@ -22,7 +29,7 @@ vectors <- vectors[uris]
 keys <- keys[uris]$V1
 
 # Many URI's are pointing to outside sources, remove them
-uris <- grepl('www.vondel.humanities.uva.nl', keys)
+uris <- grepl('www.vondel.humanities.uva.nl/onstage/', keys)
 vectors <- vectors[uris]
 keys <- keys[uris]
 
@@ -59,7 +66,7 @@ labels$label <- pbapply::pbsapply(keys, function(key) {
 pca <- prcomp(vectors)
 
 # We are fine with using the principal components that explain min.var of the variance
-min.var <- 0.9
+min.var <- 0.95
 # Calculate variance
 pca.var <- pca$sdev^2
 # Take the cumulutive sum of proportional variance
@@ -78,7 +85,7 @@ shows.idx <- grepl('/shows/', keys)
 plays.idx <- grepl('/plays', keys)
 persons.idx <- grepl('/persons/', keys)
 
-clst.shows <- mclust::Mclust(vectors.pc[shows.idx,], G = 1:16)
+clst.shows <- mclust::Mclust(vectors.pc[shows.idx,], G = 1:4)
 clst.plays <- mclust::Mclust(vectors.pc[plays.idx,], G = 1:24)
 clst.persons <- mclust::Mclust(vectors.pc[persons.idx,], G = 1:24)
 
@@ -88,13 +95,41 @@ labels$cluster[plays.idx] <- paste0('plays-cluster-', clst.plays$classification)
 labels$cluster[persons.idx] <- paste0('persons-cluster-', clst.persons$classification)
 rm(shows.idx, plays.idx, persons.idx)
 
-clst.combined <- mclust::Mclust(vectors.pc, G = 24:32)
-labels$cluster2 <- clst.combined$classification
-
 fwrite(data.table(vectors.pc), file = "output/onstage.pca.tsv", sep = "\t", col.names = F, row.names = F, quote = F)
 fwrite(labels, file = 'output/onstage.pca.labels.tsv', sep = "\t", row.names = F)
 
+labels.shows <- labels[labels$type == 'shows']
+labels.shows$type = NULL
+labels.shows$cluster <- as.factor(labels.shows$cluster)
+labels.shows$label <- as.Date(labels.shows$label)
+labels.shows$date.num <- as.numeric(labels.shows$label)
+labels.shows$year <- year(labels.shows$label)
+labels.shows <- labels.shows[!is.na(labels.shows$date.num)]
 
 
+bin <- diff(range(year(labels.shows$label))) # used for aggregating the data and aligning the labels
 
+year.sums = table(factor(labels.shows$year, levels=min(labels.shows$year):max(labels.shows$year)))
+year.range <- min(labels.shows$year):max(labels.shows$year)
+year.per.cluster <- data.table(t(sapply(levels(labels.shows$cluster), function(c){
+  x <- table(factor(labels.shows[labels.shows$cluster == c]$year, levels=year.range)) / year.sums
+  x[is.nan(x)] <- 0
+  return(x)
+})))
+year.per.cluster <- data.table(cluster = seq_len(nrow(year.per.cluster)), year.per.cluster)
+year.per.cluster.melt <- melt(year.per.cluster, id.vars = 'cluster')
+year.per.cluster.melt$cluster <- as.factor(year.per.cluster.melt$cluster)
+colnames(year.per.cluster.melt) <- c('cluster', 'year', 'fraction')
+
+ggplot(year.per.cluster.melt, aes(x = as.Date(ISOdate(year, 1, 1)), y = fraction, fill = cluster)) + 
+  geom_bar(stat = 'identity', colour='black') +
+  ylab('Fraction') +
+  theme_bw() + 
+  scale_x_date (
+    name = 'Year',
+    breaks = seq(min(labels.shows$label), max(labels.shows$label), bin*10),
+    labels = date_format("%Y"),
+    limits = c( as.Date(min(labels.shows$label), origin="1970-01-01"), 
+                as.Date(max(labels.shows$label), origin="1970-01-01"))
+    )
 
