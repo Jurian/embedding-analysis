@@ -9,7 +9,6 @@ createFileName <- function(file, reverse, bca.type, glove.type, dimensions) {
   paste(file,reverse,bca.type,glove.type,dimensions, sep = '.')
 }
 
-<<<<<<< HEAD
 createFileDir <- function(dir, filename) {
   paste0(dir, filename)
 }
@@ -18,9 +17,6 @@ createFileDir <- function(dir, filename) {
 filename <- createFileName('onstage', T, 'semantic', 'amsgrad', 200)
 inputFile <- createFileDir('../graph-embeddings/out/', filename)
 outputFile <- createFileDir('output/', filename)
-=======
-filename <- createFileName('onstage.new', T, 'vanilla', 'amsgrad', 200)
->>>>>>> 646f0722787dfaa1ce93aa12f597d05a7a85845c
 
 # Load in the data
 vectors <- fread(paste0(inputFile, '.vectors.tsv'), sep = "\t")
@@ -91,10 +87,7 @@ vectors.pc <- predict(pca, vectors)[,1:pca.min]
 # Clean up some more
 rm(pca.cum.var, pca.var, min.var)
 
-<<<<<<< HEAD
+
 fwrite(labels, file = paste0(outputFile,'.metadata.tsv'), sep = "\t", row.names = F)
 fwrite(data.table(vectors.pc), file = paste0(outputFile,'.pca.tsv'), sep = "\t", col.names = F, row.names = F, quote = F)
-=======
-fwrite(labels, file = paste0('output/', filename,'.metadata.tsv'), sep = "\t", row.names = F)
-fwrite(data.table(vectors.pc), file = paste0('output/',filename,'.pca.tsv'), sep = "\t", col.names = F, row.names = F, quote = F)
->>>>>>> 646f0722787dfaa1ce93aa12f597d05a7a85845c
+
