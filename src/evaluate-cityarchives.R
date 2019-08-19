@@ -84,7 +84,7 @@ R.precision <- pbapply(vectors.dist, 1, function(distance) {
 
 sum(R.precision == 1 ) / nrow(vectors.dist)
 hist(R.precision, breaks = 100)
-
+ 
 ndcg <-  pbapply(vectors.dist, 1, function(distance) {
   
   vector.order <- cluster[base::order(distance)]
@@ -105,7 +105,7 @@ ndcg <-  pbapply(vectors.dist, 1, function(distance) {
 })
 
 sum(ndcg == 1 ) / nrow(vectors.dist)
-hist(ndcg, breaks = 100)
+hist(ndcg, breaks = 100, xlab = 'Normalized Discounted Cumulative Gain')
 
 # We test using a subset
 # First order by the cluster IDs so the first 100 rows contain clusters with all members present
