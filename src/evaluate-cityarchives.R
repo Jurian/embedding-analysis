@@ -83,7 +83,7 @@ R.precision <- pbapply(vectors.dist, 1, function(distance) {
 })
 
 sum(R.precision == 1 ) / nrow(vectors.dist)
-hist(R.precision, breaks = length(unique(R.precision)))
+hist(R.precision, breaks = 100)
 
 ndcg <-  pbapply(vectors.dist, 1, function(distance) {
   

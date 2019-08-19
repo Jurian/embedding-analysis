@@ -2,29 +2,36 @@ library(data.table)
 library(ggplot2)
 library(Rtsne)
 library(pbapply)
-
+library(mclust)
 
 createFileName <- function(file, reverse, bca.type, glove.type, dimensions) {
   reverse <- if(reverse) 'reverse' else ''
-  paste(file,reverse,bca.type,glove.type,dimensions, sep = '.')
+  paste(file,reverse,'0.1_1.0E-4',bca.type,glove.type,dimensions, sep = '.')
 }
 
-filename <- createFileName('onstage.new', T, 'vanilla', 'amsgrad', 200)
+filename <- createFileName('onstage', T, 'directed_weighted_literal', 'amsgrad', 200)
 
 # Load in the data
-vectors <- fread(paste0('data/', filename, '.vectors.tsv'), sep = "\t")
-keys <- fread(paste0('data/',filename,'.dict.tsv'), sep = '\t', quote = "")
-metadata <- fread('data/onstage_labels.tsv', header = T, sep = '\t')
+vectors <- fread(paste0('../graph-embeddings/out/', filename, '.vectors.tsv'), sep = "\t")
+keys <- fread(paste0('../graph-embeddings/out/',filename,'.dict.tsv'), sep = '\t', quote = "")
+metadata <- fread('data/onstage_play_metadata.csv', header = F, sep = '\t')
+colnames(metadata) <- c('URI', 'lang', 'label')
 
 # Only keep the records for URI's
-uris <- keys$V2 == 0
+uris <- keys$type == 0
 vectors <- vectors[uris]
-keys <- keys[uris]$V1
+keys <- keys[uris]$key
 
-# Many URI's are pointing to outside sources, remove them
-uris <- grepl('www.vondel.humanities.uva.nl', keys)
-vectors <- vectors[uris]
-keys <- keys[uris]
+#keys <- keys$key
+
+# Remove shows
+uris <- grepl('/shows/', keys)
+vectors <- vectors[!uris]
+keys <- keys[!uris] 
+# Remove persons
+uris <- grepl('/persons/', keys)
+vectors <- vectors[!uris]
+keys <- keys[!uris]
 
 # Clean up
 rm(uris)
@@ -53,30 +60,25 @@ labels$label <- pbapply::pbsapply(keys, function(key) {
   return(metadata[idx]$label)
 })
 
-# Use principal component analysis to reduce the number of dimensions
-pca <- prcomp(vectors)
+labels$lang <- pbapply::pbsapply(keys, function(key) {
+  idx <- which(key == metadata$URI)[1]
+  if(is.na(idx))
+    return('unknown')
+  return(metadata[idx]$lang)
+})
 
-# We are fine with using the principal components that explain min.var of the variance
-min.var <- 0.9
-# Calculate variance
-pca.var <- pca$sdev^2
-# Take the cumulutive sum of proportional variance
-pca.cum.var <- cumsum(pca.var/sum(pca.var))
 
-# For fun, let's view a scree-like plot of this pca object
-plot(pca.var/sum(pca.var), 
-     xlab = 'Principal Component',
-     ylab = 'Proportion of Variance Explained',
-     type = 'b')
 
-# Find the first component that meets the min.var mark
-pca.min <- min(which(pca.cum.var >= min.var))
-
-# Transform our original vectors to pca space, taking only the components necessary to reach min.var
-vectors.pc <- predict(pca, vectors)[,1:pca.min]
-
-# Clean up some more
-rm(pca.cum.var, pca.var, min.var)
+#clust <- Mclust(vectors, G = length(unique(labels$lang)))
+#train <- sample(1:nrow(vectors), 1500)
+clust <- MclustDA(vectors, as.factor(labels$lang), modelType = "EDDA")
+labels$cluster <- predict(clust, vectors)$classification
 
 fwrite(labels, file = paste0('output/', filename,'.metadata.tsv'), sep = "\t", row.names = F)
-fwrite(data.table(vectors.pc), file = paste0('output/',filename,'.pca.tsv'), sep = "\t", col.names = F, row.names = F, quote = F)
+fwrite(vectors, file = paste0('output/',filename,'.tsv'), sep = "\t", col.names = F, row.names = F, quote = F)
+
+#clust <- hclust(dist(vectors), method = "complete")
+#clust.cut <- cutree(clust, h = .5)
+#labels$cut <- clust.cut
+#barplot(table(labels$cut))
+
