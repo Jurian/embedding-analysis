@@ -91,24 +91,7 @@ fwrite(vectors, file = paste0('output/', filename, '.tsv'), sep = "\t", col.name
 rm(filename, has_cluster)
 
 
-vectors.dist <- data.table(as.matrix(dist(vectors, method = 'canberra')))
-R.precision <- pbapply::pbapply(vectors.dist, 1, function(distance) {
-  
-  vector.order <- labels[base::order(distance)]$cluster
-  cluster <- (vector.order == vector.order[1])
-  cluster.idx <- which(cluster)
-  cluster.size <- length(cluster.idx)
-
-  # Nr of relevant documents R
-  R <- cluster.size
-  # Nr of results in top-R
-  r <- sum(cluster.idx <= R)
-  # R-precision
-  r / R
-})
-
-sum(R.precision == 1 ) / nrow(vectors.dist)
-hist(R.precision, breaks = length(unique(R.precision)))
+vectors.dist <- data.table(as.matrix(dist(vectors, method = 'canb')))
 
 ndcg <- pbapply::pbapply(vectors.dist, 1, function(distance) {
   

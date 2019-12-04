@@ -30,6 +30,16 @@ onstage <- data.table(adadelta, adam, adagrad, amsgrad)
 onstage.melt <- melt(onstage, variable.name = 'method', value.name = 'loss')
 onstage.melt$iteration <- 1:nrow(onstage)
 
+onstage.plot <- ggplot(data=onstage.melt) +
+  geom_line(aes(x=iteration, y=loss, color=method), size = 1) +
+  ggtitle('Onstage') +
+  ylim(c(0,0.05)) +
+  ylab('loss') +
+  theme_bw() +
+  theme(axis.title=element_text(size=14), axis.text=element_text(size=12), legend.text=element_text(size=16), legend.title = element_blank(), legend.key.size = unit(2, 'lines'))
+
+
+
 adadelta <- fread(file='data/saa/adadelta.txt')$V1
 adam <- fread(file='data/saa/adam.txt')$V1
 adagrad <- fread(file='data/saa/adagrad.txt')$V1
@@ -42,22 +52,15 @@ length(amsgrad) <- max(length(adadelta), length(adam), length(amsgrad), length(a
 
 saa <- data.table(adadelta, adam, adagrad, amsgrad)
 saa.melt <- melt(saa, variable.name = 'method', value.name = 'loss')
-saa.melt$iteration <- 1:nrow(saa)
+saa.melt$iteration <- rep(1:nrow(saa), 4)
 
-onstage.plot <- ggplot(data=onstage.melt) +
-  geom_line(aes(x=iteration, y=loss, color=method), size = 1) +
-  ggtitle('Onstage') +
-  ylim(c(0,0.05)) +
-  ylab('loss') +
-  theme_bw() +
-  theme(axis.title=element_text(size=14), axis.text=element_text(size=12), legend.text=element_text(size=16), legend.title = element_blank(), legend.key.size = unit(2, 'lines'))
 
-saa.plot <- ggplot(data=saa.melt) +
+ggplot(data=saa.melt) +
   geom_line(aes(x=iteration, y=loss, color=method), size = 1) +
-  ggtitle('Amsterdam City Archives') +
-  ylim(c(0,0.05)) +
-  ylab('loss') +
+  #ggtitle('Amsterdam City Archives') +
+  ylim(c(0,0.15)) +
+  ylab('normalized loss') +
   theme_bw() + 
-  theme(axis.title=element_text(size=14), axis.text=element_text(size=12))
+  theme(axis.title=element_text(size=14), axis.text=element_text(size=16), legend.text = element_text(size=16), legend.title = element_blank())
 
 grid_arrange_shared_legend(onstage.plot, saa.plot, nrow = 1)
