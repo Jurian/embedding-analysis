@@ -39,33 +39,6 @@ vec hadamardVV(const vec& a, const vec& b) {
   return a % b;
 }
 
-// [[Rcpp::export]]
-umat extractEquivalenceClass(const sp_mat& M, const uvec& idx) {
-  umat out(idx.size(), idx.size());
-  
-  for(uword i = 0; i < idx.n_elem; i++) {
-    for(uword j = 0; j < idx.n_elem; j++) {
-      out(i,j) = M(idx[i],idx[j]);
-    }
-  }
-  
-  return out;
-}
-
-// [[Rcpp::export]]
-double subgraphConnectedness(const sp_mat& M, const uvec& idx) {
-  
-  double n_elem = 0.5 * idx.n_elem * ( idx.n_elem - 1 );
-  uword sum = 0;
-  
-  for(uword i = 0; i < idx.n_elem; i++) {
-    for(uword j = i+1; j < idx.n_elem; j++) {
-      if(M(idx[i],idx[j]) == 1) sum++;
-    }
-  }
-  return sum/n_elem;
-}
-
 //' Force the sparse matrix M to be reflexive
 //' @param M A sparse matrix
 //' @return The modified sparse matrix M
@@ -84,98 +57,7 @@ sp_mat makeSymmetric(sp_mat& M) {
   return M;
 }
 
-bool cmpSparseMatrices(const sp_mat& A, const sp_mat& B) {
-  
-  sp_mat::const_iterator it_A = A.begin();
-  sp_mat::const_iterator it_B = B.begin();
-  
-  const sp_mat::const_iterator A_end = A.end();
-  const sp_mat::const_iterator B_end = B.end();
-  
-  for(;it_A != A_end && it_B != B_end; ++it_A, ++it_B) {
-    if(it_A.row() != it_B.row()) return false;
-    if(it_A.col() != it_B.col()) return false;
-  }
-  
-  return true;
-}
 
-bool cmpVectors(const uvec& a, const uvec& b) {
-  if(a.n_elem != b.n_elem) return false;
-
-  for(uword i = 0; i < a.n_elem; i++) {
-    if(a[i] != b[i]) return false;
-  }
-  
-  return true;
-}
-
-//' Find all equivalence classes in the sparse matrix M
-//' @param M A sparse matrix, assumed to be symmetric, reflexive and transitive
-//' @return A vector with all equivalence class labels
-// [[Rcpp::export]]
-uvec findEquivalenceClasses(const sp_mat& M) {
-  
-  uvec captains = linspace<uvec>(0, M.n_cols-1, M.n_cols);
-  uword currentCol = 0;
-  const sp_mat::const_iterator end = M.end();
-  
-  // Go through all non-zero positions in M
-  for(sp_mat::const_iterator it = M.begin() ; it != end; ++it ) {
-    // Only use the first element of each column and only cover top triangle
-    if(currentCol < it.col() && it.col() > it.row()) {
-      captains[it.col()] = it.row();
-      // Skip over the other elements in this column
-      currentCol = it.col();
-    } else {
-      continue;
-    }
-  }
-  
-  return captains;
-}
-
-// [[Rcpp::export]]
-uvec findConnectedComponents(const sp_mat& S) {
-  
-  sp_mat P = S;
-  sp_mat R = S;
-  
-  while(true) {
-    P = P * S;
-    sp_mat T = R + P;
-    
-    if(!cmpSparseMatrices(R, T)) {
-      R = T;
-    } else {
-      break;
-    }
-  }
-  
-  // At this point R is symmetric, reflexive and transitive
-  return findEquivalenceClasses(R);
-  
-}
-
-
-bool isClique(const sp_mat& M, const uvec& idx) {
-  return subgraphConnectedness(M, idx) == 1;
-}
-
-
-uvec getClosedNeighborhood(const sp_mat& M, const uword& idx) {
-  const sp_mat::const_col_iterator end = M.end_col(idx);
-  const uword k = M.col(idx).n_nonzero;
-  uvec neighbors(k);
-
-  sp_mat::const_col_iterator it = M.begin_col(idx);
-  
-  for(uword i = 0; it != end; ++it, i++) {
-    neighbors[i] = it.row();
-  }
-  
-  return neighbors;
-}
 
 void print(const uvec& v) {
   for(uword i = 0; i < v.n_elem; i++){
@@ -184,51 +66,6 @@ void print(const uvec& v) {
   }
   Rcout << endl;
 }
-
-uvec findCriticalClique(const sp_mat& M, const uword& idx) {
-  
-  const uvec cnh = getClosedNeighborhood(M, idx);
-  uvec clique(cnh.n_elem);
-  uword j = 0;
-  
-  for(uword i = 0; i < clique.n_elem; i++) {
-    const uvec _cnh = getClosedNeighborhood(M, cnh[i]);
-    if(idx == 3571) {
-      print(cnh);
-      print(_cnh);
-    }
-    if(cmpVectors(cnh, _cnh)) {
-      clique[j] = cnh[i];
-      j++;
-    }
-  }
-  
-  clique.set_size(j);
-  
-  return clique;
-}
-
-// [[Rcpp::export]]
-uvec kernelize(const sp_mat& M) {
-
-  uvec cliques(M.n_cols);
-  bool processed[M.n_cols] {};
-  
-  for(uword i = 0; i < M.n_cols; i++) {
-    if(processed[i]) continue;
-    
-    const uvec crit = findCriticalClique(M, i);
-    for(uword j = 0; j < crit.n_elem; j++) {
-      cliques[crit[j]] = i;
-      processed[crit[j]] = true;
-    }
-
-  }
-  
-  return cliques;
-}
-
-
 
 //' Find the indices of the k smallest elements in vector v
 //' @param v The vector in which to find k smallest elements
@@ -355,7 +192,7 @@ sp_mat createRelationalMatrix(const mat& M, const uword& k, const RObject& class
   for( uword i = 0; i < M.n_cols; i++ ) {
     
     neighbors = kSmallestFast(M, i, k);
-    hadamard.set_size(M.n_rows, k);
+    hadamard.resize(M.n_rows, k);
     uword s = 0;
     
     for( uword j = 0; j < k; j++) {
@@ -373,7 +210,7 @@ sp_mat createRelationalMatrix(const mat& M, const uword& k, const RObject& class
     
       // We may have skipped some neighbors we have already classified
       // So remove any unused trailing columns
-      hadamard.set_size(M.n_rows, s);
+      hadamard.resize(M.n_rows, s);
       
       classification = INTEGER(classFunc(classifier, hadamard.t()));
       
@@ -446,7 +283,7 @@ sp_mat createRelationalMatrixFast(const mat& M, const uword& k, const uword& c, 
       
       // We may have skipped some neighbors we have already classified
       // So remove any unused trailing columns
-      hadamardCache.set_size(M.n_rows, sTotal);
+      hadamardCache.resize(M.n_rows, sTotal);
       
       classification = INTEGER(classFunc(classifier, hadamardCache.t()));
       
@@ -454,7 +291,7 @@ sp_mat createRelationalMatrixFast(const mat& M, const uword& k, const uword& c, 
         if(classification[j] - 1 == 1) R(neighborRowCache[j], neighborColCache[j]) = 1;
       }
       
-      hadamardCache.set_size(M.n_rows, k*c);
+      hadamardCache.resize(M.n_rows, k*c);
       sTotal = 0;
       
     }
@@ -497,7 +334,7 @@ sp_mat createRelationalPMatrix(const mat& M, const uword& k, const RObject& clas
   for( uword i = 0; i < M.n_cols; i++ ) {
     
     neighbors = kSmallestFast(M, i, k);
-    hadamard.set_size(M.n_rows, k);
+    hadamard.resize(M.n_rows, k);
     uword s = 0;
     
     for( uword j = 0; j < k; j++) {
@@ -515,7 +352,7 @@ sp_mat createRelationalPMatrix(const mat& M, const uword& k, const RObject& clas
       
       // We may have skipped some neighbors we have already classified
       // So remove any unused trailing columns
-      hadamard.set_size(M.n_rows, s);
+      hadamard.resize(M.n_rows, s);
       
       classification = REAL(classFunc(classifier, hadamard.t(), "probabilities"));
       

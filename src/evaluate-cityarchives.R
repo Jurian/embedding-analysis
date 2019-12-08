@@ -12,6 +12,7 @@ library(RcppProgress)
 library(Matrix)
 library(Matrix.utils)
 sourceCpp('src/functions.cpp')
+sourceCpp('src/kernelization.cpp')
 source('src/functions.R')
 
 
