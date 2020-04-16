@@ -7,6 +7,7 @@ library(caret)
 library(ROCR)
 library(Rcpp)
 library(RcppProgress)
+library(ggplot2)
 
 rm(list=lsf.str())
 Rcpp::sourceCpp('src/CppFunctions.cpp')
@@ -85,6 +86,10 @@ cm <- function(svm, pairs) {
   confusionMatrix(predict(svm, pairs[, !'y']), pairs$y)
 }
 
+###############################################################
+#                    SENSITIVITY ANALYSIS                     #
+###############################################################
+
 train.multiple <- function(type, edges, matching, n, p = 0.5) {
   pblapply(1:n, function(x) {
     pairs <- get.pairs(type, edges, matching, p = p, progress = F)
@@ -93,16 +98,37 @@ train.multiple <- function(type, edges, matching, n, p = 0.5) {
   })
 }
 
+std <- function(x) sd(x)/sqrt(length(x))
+
+extract.sensitivity <- function(list) {
+  sapply(list, function(x){x$cm$byClass[1]})
+}
+
 list.gde <- train.multiple('glove', 'directed',   'exact',   n = 100, p = 0.1)
 list.gdp <- train.multiple('glove', 'directed',   'partial', n = 100, p = 0.1)
 list.gue <- train.multiple('glove', 'undirected', 'exact',   n = 100, p = 0.1)
 list.gup <- train.multiple('glove', 'undirected', 'partial', n = 100, p = 0.1)
 
+std(extract.sensitivity(list.gde))
+std(extract.sensitivity(list.gdp))
+std(extract.sensitivity(list.gue))
+std(extract.sensitivity(list.gup))
+
+sens <- data.table(
+  gde = extract.sensitivity(list.gde),
+  gdp = extract.sensitivity(list.gdp),
+  gue = extract.sensitivity(list.gue),
+  gup = extract.sensitivity(list.gup)
+)
+
+ggplot(melt(sens, measure.vars = colnames(sens))) + 
+  geom_density(aes(x=value, fill = variable))
+
 ###############################################################
 #                    GLOVE DIRECTED EXACT                     #
 ###############################################################
 
-pairs.gde <- get.pairs('glove', 'directed', 'exact', p = 0.5, progress = T)
+pairs.gde <- get.pairs('glove', 'directed', 'exact', p = 0.75, progress = T)
 svm.gde <- tune.svm(pairs.gde$train)
 cm.gde <- cm(svm.gde, pairs.gde$test)
 
@@ -111,7 +137,7 @@ cm.gde <- cm(svm.gde, pairs.gde$test)
 #                    GLOVE DIRECTED PARTIAL                   #
 ###############################################################
 
-pairs.gdp <- get.pairs('glove', 'directed', 'partial', p = 0.5, progress = T)
+pairs.gdp <- get.pairs('glove', 'directed', 'partial', p = 0.75, progress = T)
 svm.gdp <- tune.svm(pairs.gdp$train)
 cm.gdp <- cm(svm.gdp, pairs.gdp$test)
 
@@ -119,7 +145,7 @@ cm.gdp <- cm(svm.gdp, pairs.gdp$test)
 #                    GLOVE UNDIRECTED EXACT                     #
 ###############################################################
 
-pairs.gue <- get.pairs('glove', 'undirected', 'exact', p = 0.5, progress = T) 
+pairs.gue <- get.pairs('glove', 'undirected', 'exact', p = 0.75, progress = T) 
 svm.gue <- tune.svm(pairs.gue$train)
 cm.gue <- cm(svm.gue, pairs.gue$test)
 
@@ -128,7 +154,7 @@ cm.gue <- cm(svm.gue, pairs.gue$test)
 #                    GLOVE UNDIRECTED PARTIAL                   #
 ###############################################################
 
-pairs.gup <- get.pairs('glove', 'undirected', 'partial', p = 0.5, progress = T)
+pairs.gup <- get.pairs('glove', 'undirected', 'partial', p = 0.75, progress = T)
 svm.gup <- tune.svm(pairs.gup$train)
 cm.gup <- cm(svm.gup, pairs.gup$test)
 
