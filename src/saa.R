@@ -86,6 +86,18 @@ cm <- function(svm, pairs) {
   confusionMatrix(predict(svm, pairs[, !'y']), pairs$y)
 }
 
+fscore <- function(svm, pairs) {
+  caret::F_meas(predict(svm, pairs[, !'y']), pairs$y)
+}
+
+recall <- function(svm, pairs) {
+  caret::recall(predict(svm, pairs[, !'y']), pairs$y)
+}
+
+precision <- function(svm, pairs) {
+  caret::precision(predict(svm, pairs[, !'y']), pairs$y)
+}
+
 ###############################################################
 #                    SENSITIVITY ANALYSIS                     #
 ###############################################################
