@@ -371,7 +371,7 @@ cos.data <- function(edges, matching, key.pairs) {
 #                    CREATE GLOBAL PAIRS                      #
 ###############################################################
 
-load(file='pairs.RData')
+load(file='data/pairs.RData')
 #pairs <- get.key.pairs()
 
 
@@ -379,7 +379,7 @@ load(file='pairs.RData')
 #                      COMPARE MODELS                         #
 ###############################################################
 
-load(file='partition.RData')
+load(file='data/partition.RData')
 #partition <- caret::createDataPartition(pairs$y, p = 0.75, list = F)
 
 ###############################################################
